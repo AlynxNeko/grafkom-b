@@ -349,7 +349,7 @@ var mouseMove = function (e) {
     e.preventDefault();
 };
 
-// Tambahkan friction pada animate
+// Tambahkan friction pada animate dibawah LIBS.rotateX(MOVEMATRIX, PHI);
 if (!drag) {
     dX *= (1 - FRICTION);
     dY *= (1 - FRICTION);
@@ -388,10 +388,3 @@ var keyDown = function (e) {
 
 window.addEventListener("keydown", keyDown, false);
 ```
-
----
-
-## Tugas BAB 3
-1. Modifikasi program agar objek bisa **diperbesar dan diperkecil** menggunakan **scroll mouse**.
-2. Tambahkan tombol keyboard **Q** dan **E** untuk melakukan **zoom in** dan **zoom out**.
-3. Ubah warna objek saat mouse diklik.
