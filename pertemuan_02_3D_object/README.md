@@ -201,18 +201,34 @@ void main(void) {
 ```
 
 ------------------------------------------------------------------------
+## 2.x. Inisialisasi Uniform Matrix dan Matriks Transformasi
 
-## 2.x. Inisialisasi Uniform Matrix pada Shader
-
-Sebelum menggunakan matriks **projection**, **view**, dan **model** di WebGL, Anda perlu mendapatkan lokasi uniform pada shader program. Tambahkan kode berikut setelah inisialisasi shader di `main.js`:
+Sebelum menggunakan matriks **projection**, **view**, dan **model** di WebGL, Anda perlu mendapatkan lokasi uniform pada shader program dan menginisialisasi matriks-matriks tersebut. Tambahkan kode berikut setelah inisialisasi shader di `main.js`:
 
 ```javascript
+// Ambil lokasi uniform matrix dari shader
 var _Pmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Pmatrix");
 var _Vmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Vmatrix");
 var _Mmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Mmatrix");
+
+// Inisialisasi matriks transformasi
+var PROJMATRIX = LIBS.get_projection(40, CANVAS.width / CANVAS.height, 1, 100);
+var MOVEMATRIX = LIBS.get_I4();
+var VIEWMATRIX = LIBS.get_I4();
+
+// Geser kamera ke belakang agar objek terlihat
+LIBS.translateZ(VIEWMATRIX, -6);
 ```
 
-Kode ini digunakan untuk mengakses dan mengirim data matriks ke shader sebelum melakukan rendering objek 3D.
+Penggunaan matriks-matriks ini saat rendering:
+
+```javascript
+GL.uniformMatrix4fv(_Pmatrix, false, PROJMATRIX);
+GL.uniformMatrix4fv(_Vmatrix, false, VIEWMATRIX);
+GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
+```
+
+Kode di atas memastikan matriks **projection**, **view**, dan **model** dikirim ke shader sebelum menggambar objek 3D.
 
 
 ## 2.5. Animasi Cube
