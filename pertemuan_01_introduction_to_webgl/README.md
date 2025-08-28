@@ -182,10 +182,13 @@ var animate = function () {
 };
 animate();
 ```
+![blank_and_yellow](assets/image_bny.png)
 
 ------------------------------------------------------------------------
 
 ## 1.8 Draw Mode
+
+![draw_mode](assets/image_drawmode.png)
 
 Untuk menggambar **points**, tambahkan `gl_PointSize` di vertex shader:
 
@@ -228,7 +231,7 @@ var triangle_faces = [
     0, 2, 3
 ];
 ```
-
+![yello](assets/image_itwasallyelo.png)
 ------------------------------------------------------------------------
 
 ## 1.10 Vertex Color
@@ -268,19 +271,4 @@ var triangle_vertex = [
 ];
 ```
 
-Menggambar dengan warna per-vertex:
-
-``` javascript
-GL.vertexAttribPointer(_position, 2, GL.FLOAT, false, 4 * (2 + 3), 0);
-GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 4 * (2 + 3), 4 * 2);
-```
-
-------------------------------------------------------------------------
-
-## **Tugas**
-
-1.  Buatlah sebuah **rumah** lengkap dengan **atap** dan **pintu**
-    menggunakan WebGL.
-2.  Buatlah sebuah **lingkaran** menggunakan WebGL.
-
-------------------------------------------------------------------------
+![rainbow](assets/image_rainbow.png)
