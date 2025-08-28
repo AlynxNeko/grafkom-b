@@ -212,4 +212,127 @@ LIBS.rotateY(MOVEMATRIX, dt*0.001);
 LIBS.rotateX(MOVEMATRIX, dt*0.001);
 ```
 
-![cube](assets/image_cube.png)
+[cube_spinning](assets/image_cube.png)
+
+
+# BAB 3: Event pada WebGL
+
+## 3.1 Mouse Event
+Bab ini akan membahas bagaimana cara menggerakkan objek menggunakan **mouse**. Kita akan menambahkan event listener untuk menangkap interaksi mouse dan memutar objek berdasarkan pergerakan pengguna.
+
+### Perubahan Utama
+- Hapus animasi rotasi otomatis di fungsi `animate` pada BAB sebelumnya.
+- Tambahkan variabel **THETA** dan **PHI** untuk menyimpan sudut rotasi.
+- Tambahkan fungsi `mouseDown`, `mouseUp`, `mouseMove`, dan event listener-nya.
+
+```javascript
+var THETA = 0, PHI = 0;
+var drag = false;
+var x_prev, y_prev;
+
+var mouseDown = function (e) {
+    drag = true;
+    x_prev = e.pageX, y_prev = e.pageY;
+    e.preventDefault();
+    return false;
+};
+
+var mouseUp = function (e) {
+    drag = false;
+};
+
+var mouseMove = function (e) {
+    if (!drag) return false;
+    var dX = (e.pageX - x_prev) * 2 * Math.PI / CANVAS.width;
+    var dY = (e.pageY - y_prev) * 2 * Math.PI / CANVAS.height;
+    THETA += dX;
+    PHI += dY;
+    x_prev = e.pageX, y_prev = e.pageY;
+    e.preventDefault();
+};
+
+CANVAS.addEventListener("mousedown", mouseDown, false);
+CANVAS.addEventListener("mouseup", mouseUp, false);
+CANVAS.addEventListener("mouseout", mouseUp, false);
+CANVAS.addEventListener("mousemove", mouseMove, false);
+```
+
+Lalu di dalam `animate`, ubah rotasi objek menjadi berbasis variabel `THETA` dan `PHI`:
+
+```javascript
+LIBS.set_I4(MOVEMATRIX);
+LIBS.rotateY(MOVEMATRIX, THETA);
+LIBS.rotateX(MOVEMATRIX, PHI);
+```
+
+---
+
+## 3.2 Friction
+Agar pergerakan lebih **smooth**, kita menambahkan efek **friction**. Friction membuat rotasi melambat secara alami setelah mouse dilepaskan.
+
+### Langkah-langkah
+1. Pindahkan deklarasi `dX` dan `dY` ke luar `mouseMove`.
+2. Tambahkan variabel **FRICTION**.
+3. Modifikasi `mouseMove` untuk menyimpan `dX` dan `dY`.
+4. Tambahkan efek friction pada `animate`.
+
+```javascript
+var FRICTION = 0.05;
+var dX = 0, dY = 0;
+
+var mouseMove = function (e) {
+    if (!drag) return false;
+    dX = (e.pageX - x_prev) * 2 * Math.PI / CANVAS.width;
+    dY = (e.pageY - y_prev) * 2 * Math.PI / CANVAS.height;
+    THETA += dX;
+    PHI += dY;
+    x_prev = e.pageX, y_prev = e.pageY;
+    e.preventDefault();
+};
+
+// Tambahkan friction pada animate
+if (!drag) {
+    dX *= (1 - FRICTION);
+    dY *= (1 - FRICTION);
+    THETA += dX;
+    PHI += dY;
+}
+```
+
+---
+
+## 3.3 Keyboard Input
+Untuk menambahkan kontrol dengan keyboard, kita menggunakan tombol **WASD** untuk memutar objek.
+
+### Langkah-langkah
+- Tambahkan variabel **SPEED**.
+- Buat fungsi `keyDown` untuk menangani input tombol.
+- Daftarkan event listener `keydown`.
+
+```javascript
+var SPEED = 0.05;
+
+var keyDown = function (e) {
+    if (e.key === 'w') {
+        dY -= SPEED;
+    }
+    else if (e.key === 'a') {
+        dX -= SPEED;
+    }
+    else if (e.key === 's') {
+        dY += SPEED;
+    }
+    else if (e.key === 'd') {
+        dX += SPEED;
+    }
+};
+
+window.addEventListener("keydown", keyDown, false);
+```
+
+---
+
+## Tugas BAB 3
+1. Modifikasi program agar objek bisa **diperbesar dan diperkecil** menggunakan **scroll mouse**.
+2. Tambahkan tombol keyboard **Q** dan **E** untuk melakukan **zoom in** dan **zoom out**.
+3. Ubah warna objek saat mouse diklik.
