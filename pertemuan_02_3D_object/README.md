@@ -202,14 +202,57 @@ void main(void) {
 
 ------------------------------------------------------------------------
 
+## 2.x. Inisialisasi Uniform Matrix pada Shader
+
+Sebelum menggunakan matriks **projection**, **view**, dan **model** di WebGL, Anda perlu mendapatkan lokasi uniform pada shader program. Tambahkan kode berikut setelah inisialisasi shader di `main.js`:
+
+```javascript
+var _Pmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Pmatrix");
+var _Vmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Vmatrix");
+var _Mmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Mmatrix");
+```
+
+Kode ini digunakan untuk mengakses dan mengirim data matriks ke shader sebelum melakukan rendering objek 3D.
+
+
 ## 2.5. Animasi Cube
 
 Tambahkan animasi rotasi pada fungsi `animate`:
+Sebelum menggambar dan melakukan animasi, tambahkan setup dan parameter waktu pada fungsi `animate`:
 
-``` javascript
-LIBS.rotateZ(MOVEMATRIX, dt*0.001);
-LIBS.rotateY(MOVEMATRIX, dt*0.001);
-LIBS.rotateX(MOVEMATRIX, dt*0.001);
+```javascript
+/*========================= DRAWING ========================= */
+GL.enable(GL.DEPTH_TEST);
+GL.depthFunc(GL.LEQUAL);
+GL.clearColor(0.0, 0.0, 0.0, 1.0);
+GL.clearDepth(1.0);
+
+var time_prev = 0;
+var animate = function (time) {
+    GL.viewport(0, 0, CANVAS.width, CANVAS.height);
+    GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+    var dt = time - time_prev;
+    time_prev = time;
+
+    LIBS.rotateZ(MOVEMATRIX, dt * 0.001);
+    LIBS.rotateY(MOVEMATRIX, dt * 0.001);
+    LIBS.rotateX(MOVEMATRIX, dt * 0.001);
+
+    GL.uniformMatrix4fv(_Pmatrix, false, PROJMATRIX);
+    GL.uniformMatrix4fv(_Vmatrix, false, VIEWMATRIX);
+    GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, CUBE_VERTEX);
+    GL.vertexAttribPointer(_position, 3, GL.FLOAT, false, 4 * (3 + 3), 0);
+    GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 4 * (3 + 3), 4 * 3);
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CUBE_FACES);
+    GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT, 0);
+    
+    GL.flush();
+    requestAnimationFrame(animate);
+};
+animate(0);
 ```
 
 [cube_spinning](assets/image_cube.png)
