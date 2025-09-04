@@ -20,25 +20,22 @@ function main() {
     var shader_vertex_source = `
         attribute vec3 position;
         uniform mat4 Pmatrix, Vmatrix, Mmatrix;
-        attribute vec3 color;
-        varying vec3 vColor;
+        attribute vec2 uv;
+        varying vec2 vUV;
 
         void main(void) {
             gl_Position = Pmatrix * Vmatrix * Mmatrix * vec4(position, 1.);
-            vColor = color;
+            vUV = uv;
         }`;
 
 
     var shader_fragment_source = `
         precision mediump float;
-        varying vec3 vColor;
-        uniform float greyScality;
+        uniform sampler2D sampler;
+        varying vec2 vUV;
 
         void main(void) {
-            float greyScaleValue = (vColor.r + vColor.b + vColor.g) / 3.0;
-            vec3 greyScaleColor = vec3(greyScaleValue, greyScaleValue, greyScaleValue);
-            vec3 color = mix(vColor, greyScaleColor, greyScality);
-            gl_FragColor = vec4(color, 1.0);
+            gl_FragColor = texture2D(sampler, vUV);
         }`;
 
 
@@ -67,39 +64,73 @@ function main() {
     var _position = GL.getAttribLocation(SHADER_PROGRAM, "position");
     GL.enableVertexAttribArray(_position);
 
-
-    var _color = GL.getAttribLocation(SHADER_PROGRAM, "color");
-    GL.enableVertexAttribArray(_color);
-
     var _Pmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Pmatrix");
     var _Vmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Vmatrix");
     var _Mmatrix = GL.getUniformLocation(SHADER_PROGRAM, "Mmatrix");
 
-    var _greyscality = GL.getUniformLocation(SHADER_PROGRAM, "greyScality");
+    var _uv = GL.getAttribLocation(SHADER_PROGRAM, "uv");
+    GL.enableVertexAttribArray(_uv);
+
+    var _sampler = GL.getUniformLocation(SHADER_PROGRAM, "sampler");
 
     GL.useProgram(SHADER_PROGRAM);
+    GL.uniform1i(_sampler, 0); 
 
 
     /*======================== THE TRIANGLE ======================== */
     // POINTS:
     var cube_vertex = [
-        -1, -1, -1, 0, 0, 0,
-        1, -1, -1, 1, 0, 0,
-        1,  1, -1, 1, 1, 0,
-        -1,  1, -1, 0, 1, 0,
-        -1, -1,  1, 0, 0, 1,
-        1, -1,  1, 1, 0, 1,
-        1,  1,  1, 1, 1, 1,
-        -1,  1,  1, 0, 1, 1
+        // belakang
+        -1,-1,-1,    1,1/3,
+        1,-1,-1,    3/4,1/3,
+        1, 1,-1,    3/4,2/3,
+        -1, 1,-1,    1,2/3,
+
+        // depan
+        -1,-1, 1,    1/4,1/3,
+        1,-1, 1,    2/4,1/3,
+        1, 1, 1,    2/4,2/3,
+        -1, 1, 1,    1/4,2/3,
+
+        // kiri
+        -1,-1,-1,    0,1/3,
+        -1, 1,-1,    0,2/3,
+        -1, 1, 1,    1/4,2/3,
+        -1,-1, 1,    1/4,1/3,
+
+        // kanan
+        1,-1,-1,    3/4,1/3,
+        1, 1,-1,    3/4,2/3,
+        1, 1, 1,    2/4,2/3,
+        1,-1, 1,    2/4,1/3,
+
+        // bawah
+        -1,-1,-1,    1/4,0,
+        -1,-1, 1,    1/4,1/3,
+        1,-1, 1,    2/4,1/3,
+        1,-1,-1,    2/4,0,
+
+        // atas
+        -1, 1,-1,    1/4,1,
+        -1, 1, 1,    1/4,2/3,
+        1, 1, 1,    2/4,2/3,
+        1, 1,-1,    2/4,1
     ];
 
+    let scale = 5;
+    for (let i = 0; i < cube_vertex.length; i+=5) {
+        cube_vertex[i] *= scale;
+        cube_vertex[i+1] *= scale;
+        cube_vertex[i+2] *= scale;
+    }
+
     var cube_faces = [
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        0, 3, 7, 0, 4, 7,
-        1, 2, 6, 1, 5, 6,
-        2, 3, 6, 3, 7, 6,
-        0, 1, 5, 0, 4, 5
+        0, 1, 2,   0, 2, 3,
+        4, 5, 6,   4, 6, 7,
+        8, 9,10,   8,10,11,
+        12,13,14,  12,14,15,
+        16,17,18,  16,18,19,
+        20,21,22,  20,22,23
     ];
 
     var CUBE_VERTEX = GL.createBuffer();
@@ -114,7 +145,7 @@ function main() {
     var MOVEMATRIX = LIBS.get_I4();
     var VIEWMATRIX = LIBS.get_I4();
 
-    LIBS.translateZ(VIEWMATRIX, -6);
+    LIBS.translateZ(VIEWMATRIX, 0);
 
     var THETA = 0, PHI = 0;
     var drag = false;
@@ -133,10 +164,11 @@ function main() {
         drag = false;
     };
 
+    let sensitivity = 0.3;
     var mouseMove = function (e) {
         if (!drag) return false;
-        dX = (e.pageX - x_prev) * 2 * Math.PI / CANVAS.width;
-        dY = (e.pageY - y_prev) * 2 * Math.PI / CANVAS.height;
+        dX = -(e.pageX - x_prev) * 2 * Math.PI / CANVAS.width * sensitivity;
+        dY = -(e.pageY - y_prev) * 2 * Math.PI / CANVAS.height * sensitivity;
         THETA += dX;
         PHI += dY;
         x_prev = e.pageX, y_prev = e.pageY;
@@ -167,6 +199,28 @@ function main() {
 
     window.addEventListener("keydown", keyDown, false);
 
+    /*========================= TEXTURES =========================*/
+    var load_texture = function (image_URL) {
+        var texture = GL.createTexture();
+        var image = new Image();
+
+        image.src = image_URL;
+        image.onload = function () {
+            GL.bindTexture(GL.TEXTURE_2D, texture);
+            GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, true);
+            GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image);
+            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+            GL.bindTexture(GL.TEXTURE_2D, null);
+        };
+
+        return texture;
+    };
+
+    var cube_texture = load_texture("skybox.png");
+
     /*========================= DRAWING ========================= */
     GL.enable(GL.DEPTH_TEST);
     GL.depthFunc(GL.LEQUAL);
@@ -180,10 +234,6 @@ function main() {
 
         var dt = time - time_prev;
         time_prev = time;
-
-        // LIBS.rotateZ(MOVEMATRIX, dt*0.001);
-        // LIBS.rotateY(MOVEMATRIX, dt*0.001);
-        // LIBS.rotateX(MOVEMATRIX, dt*0.001);
 
         GL.uniformMatrix4fv(_Pmatrix, false, PROJMATRIX);
         GL.uniformMatrix4fv(_Vmatrix, false, VIEWMATRIX);
@@ -201,10 +251,11 @@ function main() {
         }
 
         GL.bindBuffer(GL.ARRAY_BUFFER, CUBE_VERTEX);
-        GL.vertexAttribPointer(_position, 3, GL.FLOAT, false, 4 * (3 + 3), 0);
-        GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 4 * (3 + 3), 4 * 3);
+        GL.vertexAttribPointer(_position, 3, GL.FLOAT, false, 4 * (3 + 2), 0);
+        GL.vertexAttribPointer(_uv,       2, GL.FLOAT, false, 4 * (3 + 2), 4 * 3);
         GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CUBE_FACES);
-        GL.uniform1f(_greyscality, 0.7); // 0.0 = warna asli, 1.0 = greyscale penuh
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, cube_texture);
         GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT, 0);
 
 

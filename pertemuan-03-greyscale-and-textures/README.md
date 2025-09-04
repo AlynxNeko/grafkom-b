@@ -224,7 +224,7 @@ var load_texture = function (image_URL) {
     return texture;
 };
 
-var cube_texture = load_texture("texture.png");
+var cube_texture = load_texture("skybox.png");
 ```
 
 ---
