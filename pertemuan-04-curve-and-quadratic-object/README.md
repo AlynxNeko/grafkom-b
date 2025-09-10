@@ -119,15 +119,16 @@ Ada 6 tipe dasar objek kuadrik:
 
 Persamaan parametrik untuk masing-masing bentuk dapat dituliskan sebagai berikut:
 
-| Nama Kuadrik             | X(u,v)           | Y(u,v)           | Z(u,v)         | v-range              | u-range    |
-|---------------------------|------------------|------------------|----------------|----------------------|------------|
-| **Ellipsoid**             | a cos(v) cos(u) | b cos(v) sin(u)  | c sin(v)       | (-π/2, π/2)          | (-π, π)    |
-| **Hyperboloid satu sisi** | a sec(v) cos(u) | b sec(v) sin(u)  | c tan(v)       | (-π/2, π/2)          | (-π, π)    |
-| **Hyperboloid dua sisi**  | a tan(v) cos(u) | b tan(v) sin(u)  | c sec(v)       | (-π/2, π/2) ∪ (π/2,3π/2) | (-π, π)    |
-| **Elliptic cone**         | av cos(u)       | bv sin(u)        | cv             | semua bil            | (-π, π)    |
-| **Elliptic paraboloid**   | av cos(u)       | bv sin(u)        | v²             | v ≥ 0                | (-π, π)    |
-| **Hyperbolic paraboloid** | av tan(u)       | bv sec(u)        | v²             | v ≥ 0                | (-π, π)    |
+| Nama Kuadrik             | X(u,v)              | Y(u,v)              | Z(u,v)   | v-range                        | u-range |
+|---------------------------|---------------------|---------------------|----------|--------------------------------|---------|
+| **Ellipsoid**             | a cos(v) cos(u)    | b cos(v) sin(u)     | c sin(v) | (-π/2, π/2)                    | (-π, π) |
+| **Hyperboloid satu sisi** | a sec(v) cos(u)    | b sec(v) sin(u)     | c tan(v) | (-π/2, π/2)                    | (-π, π) |
+| **Hyperboloid dua sisi**  | a tan(v) cos(u)    | b tan(v) sin(u)     | c sec(v) | Sheet 1: (-π/2, π/2) <br> Sheet 2: (π/2, 3π/2) | (-π, π) |
+| **Elliptic cone**         | av cos(u)          | bv sin(u)           | cv       | semua bil                      | (-π, π) |
+| **Elliptic paraboloid**   | av cos(u)          | bv sin(u)           | v²       | v ≥ 0                          | (-π, π) |
+| **Hyperbolic paraboloid** | av tan(u)          | bv sec(u)           | v²       | semua bil                      | (-π, π) |
 
+![image](assets/image.png)
 ---
 
 ## 6.1 Membuat Ellipsoid dengan Vertex Color
