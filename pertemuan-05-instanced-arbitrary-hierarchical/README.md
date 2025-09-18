@@ -260,8 +260,8 @@ export class MyObject {
     }
 
     render(PARENT_MATRIX) {
-        var Mlocal = LIBS.multiply(this.POSITION_MATRIX, this.MOVE_MATRIX);
-        this.MODEL_MATRIX = LIBS.multiply(PARENT_MATRIX, Mlocal);
+        this.MODEL_MATRIX = LIBS.multiply(this.MOVE_MATRIX, this.POSITION_MATRIX);
+        this.MODEL_MATRIX = LIBS.multiply(this.MODEL_MATRIX, PARENT_MATRIX);
 
         this.GL.useProgram(this.SHADER_PROGRAM);
         this.GL.uniformMatrix4fv(this._MMatrix, false, this.MODEL_MATRIX);
@@ -281,7 +281,7 @@ export class MyObject {
 ---
 
 ## main.js (Pembuatan Hirarki)
-
+Jangan langsung di copy, ini cuman hal2 yang perlu ditambah
 ```javascript
 import { MyObject } from "./MyObject.js";
 
@@ -317,7 +317,7 @@ function animate(t) {
     Object1.render(LIBS.get_I4());
     requestAnimationFrame(animate);
 }
-requestAnimationFrame(animate);
+animate(0);
 ```
 
 ---
