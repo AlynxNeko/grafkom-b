@@ -1,132 +1,131 @@
-# README --- BAB 8--10: Instanced Drawing, Arbitrary Rotation & Hierarchical Object (OOP WebGL)
+# BAB 8–10: Instanced Drawing, Arbitrary Rotation & Hierarchical Object (OOP WebGL)
 
-------------------------------------------------------------------------
+---
 
-## Ringkasan singkat
+## Ringkasan Singkat
 
--   **Bab 8 (Instanced Drawing)**: menampilkan cara menggambar beberapa
-    objek identik (menghemat memori) dengan menggunakan ulang VBO/EBO
-    dan matrix transformasi terpisah untuk tiap instance.\
--   **Bab 9 (Arbitrary Rotation)**: rotasi terhadap titik/pusat
-    arbitrary dan terhadap sumbu arbitrary (line through two points)
-    dengan memanipulasi matriks transformasi.\
--   **Bab 10 (Hierarchical Object + OOP)**: membangun objek berbentuk
-    class (ES6) dengan `setup()` dan `render()` serta mendukung struktur
-    hirarki (parent-child), Mpos, Mmove, dan Mworld.
+- **Bab 8 (Instanced Drawing)**: menampilkan cara menggambar beberapa objek identik (hemat memori) dengan menggunakan ulang VBO/EBO dan matriks transformasi terpisah untuk tiap instance.  
+- **Bab 9 (Arbitrary Rotation)**: rotasi terhadap titik/pusat arbitrary dan terhadap sumbu arbitrary (line through two points) dengan memanipulasi matriks transformasi.  
+- **Bab 10 (Hierarchical Object + OOP)**: membangun objek berbentuk class (ES6) dengan `setup()` dan `render()` serta mendukung struktur hirarki (parent-child), Mpos, Mmove, dan Mworld.
 
-------------------------------------------------------------------------
+---
 
 ## Prasyarat
 
-1.  WebGL context (`GL`) dan shader program (`SHADER_PROGRAM`) siap.\
+1. WebGL context (`GL`) dan shader program (`SHADER_PROGRAM`) siap.  
+2. LIBS util tersedia dengan fungsi-fungsi:
+   - `get_I4()`, `set_I4(mat)`, `translateX/Y/Z(mat, v)`  
+   - `rotateX/Y/Z(mat, angle)`, `scaleX/Y/Z(mat, s)`  
+   - `multiply(m1, m2)`  
+3. Uniform/atribut shader: `_Pmatrix`, `_Vmatrix`, `_Mmatrix`, `_position`, `_color`, dll.  
+4. Gunakan `type="module"` pada `<script>` untuk ES6 modules:
 
-2.  LIBS util tersedia dengan fungsi-fungsi:
+```html
+<script type="module" src="main.js"></script>
+```
 
-    -   `get_I4()`, `set_I4(mat)`, `translateX/Y/Z(mat, v)`,
-        `rotateX/Y/Z(mat, angle)`, `scaleX/Y/Z(mat, s)`,
-        `multiply(m1, m2)` (lihat implementasi `multiply` di bawah).\
+---
 
-3.  Uniform/atribut shader: `_Pmatrix`, `_Vmatrix`, `_Mmatrix`,
-    `_position`, `_color`, dll.\
+## Struktur File (Contoh)
 
-4.  Gunakan `type="module"` pada `<script>` untuk ES6 modules:
+```
+/project
+  libs.js
+  MyObject.js
+  main.js
+  index.html
+```
 
-    ``` html
-    <script type="module" src="main.js"></script>
-    ```
+---
 
-------------------------------------------------------------------------
+# BAB 8 — Instanced Drawing (Multiple Object)
 
-## Struktur file (contoh)
+### Apa Itu
 
-    /project
-      libs.js
-      MyObject.js
-      main.js
-      index.html
-
-------------------------------------------------------------------------
-
-# 1. BAB 8 --- Instanced Drawing (Multiple Object)
-
-### Apa itu
-
-Instanced drawing = menggambar banyak objek identik dengan **satu set
-vertex/faces** tapi dengan **transformasi berbeda** (model matrix
-berbeda). Ini menghemat memori karena VBO/EBO tidak digandakan.
+Instanced drawing = menggambar banyak objek identik dengan **satu set vertex/faces** tapi dengan **transformasi berbeda**.  
+Menghemat memori karena VBO/EBO tidak digandakan.
 
 ### Tujuan
 
-Membuat 2 (atau lebih) kubus identik dengan posisi berbeda menggunakan
-kembali VBO/EBO yang sama. Masing-masing instance memiliki `MOVEMATRIX`
-sendiri.
+Membuat 2 (atau lebih) kubus identik dengan posisi berbeda menggunakan kembali VBO/EBO yang sama.  
+Masing-masing instance memiliki `MOVEMATRIX` sendiri.
 
-### Langkah-langkah (step-by-step)
+### Langkah-Langkah
 
-1.  **Buat dua matrix model untuk instance**:
-    `javascript     var MOVEMATRIX = LIBS.get_I4();     var MOVEMATRIX2 = LIBS.get_I4();`
+1. **Buat dua matrix model untuk instance**:
 
-2.  **Sediakan VBO/EBO untuk objek (sekali saja)** --- buat buffer
-    vertex dan faces untuk kubus (posisi + warna jika perlu).
+```javascript
+var MOVEMATRIX  = LIBS.get_I4();
+var MOVEMATRIX2 = LIBS.get_I4();
+```
 
-3.  **Di fungsi animate**: set transform untuk tiap instance sebelum
-    menggambar: \`\`\`javascript // instance 1 LIBS.set_I4(MOVEMATRIX);
-    LIBS.translateX(MOVEMATRIX, -2); LIBS.rotateY(MOVEMATRIX, THETA);
-    LIBS.rotateX(MOVEMATRIX, PHI);
+2. **Sediakan VBO/EBO untuk objek (sekali saja)**.  
 
-    GL.uniformMatrix4fv(\_Mmatrix, false, MOVEMATRIX);
-    GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT,
-    0);
+3. **Di fungsi animate**: set transform untuk tiap instance sebelum menggambar:
 
-    // instance 2 (reuse same VBO/EBO) LIBS.set_I4(MOVEMATRIX2);
-    LIBS.translateX(MOVEMATRIX2, 2); LIBS.rotateY(MOVEMATRIX2, THETA);
-    LIBS.rotateX(MOVEMATRIX2, PHI);
+```javascript
+// Instance 1
+LIBS.set_I4(MOVEMATRIX);
+LIBS.translateX(MOVEMATRIX, -2);
+LIBS.rotateY(MOVEMATRIX, THETA);
+LIBS.rotateX(MOVEMATRIX, PHI);
 
-    GL.uniformMatrix4fv(\_Mmatrix, false, MOVEMATRIX2);
-    GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT,
-    0); \`\`\`
+GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
+GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT, 0);
 
-4.  **Output**: dua kubus identik, posisi berbeda. VBO/EBO hanya dibuat
-    sekali.
+// Instance 2 (reuse VBO/EBO)
+LIBS.set_I4(MOVEMATRIX2);
+LIBS.translateX(MOVEMATRIX2, 2);
+LIBS.rotateY(MOVEMATRIX2, THETA);
+LIBS.rotateX(MOVEMATRIX2, PHI);
 
-------------------------------------------------------------------------
+GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX2);
+GL.drawElements(GL.TRIANGLES, cube_faces.length, GL.UNSIGNED_SHORT, 0);
+```
 
-# 2. BAB 9 --- Arbitrary Rotation
+4. **Output**: dua kubus identik, posisi berbeda. VBO/EBO hanya dibuat sekali.
 
-### Apa itu
+---
 
-Rotasi terhadap titik atau sumbu yang **tidak berada di origin**.
-Dilakukan dengan kombinasi translasi dan rotasi (atau serangkaian rotasi
-dan translasi untuk sumbu arbitrary).
+# BAB 9 — Arbitrary Rotation
 
-### 2.1 Implementasi fungsi perkalian matriks (`libs.js`)
+### Apa Itu
 
-Tambahkan fungsi `multiply` (4×4 matrix multiply) yang akan digunakan
-untuk menggabungkan transformasi:
+Rotasi terhadap titik atau sumbu yang **tidak berada di origin**.  
+Dilakukan dengan kombinasi translasi dan rotasi.
 
-``` javascript
+---
+
+## 9.1 Implementasi Fungsi Perkalian Matriks (`libs.js`)
+
+```javascript
 multiply: function (m1, m2) {
     var rm = this.get_I4();
     var N = 4;
     for (var i = 0; i < N; i++) {
         for (var j = 0; j < N; j++) {
             rm[i * N + j] = 0;
-            for (var k = 0; k < N; k++)
+            for (var k = 0; k < N; k++) {
                 rm[i * N + j] += m1[i * N + k] * m2[k * N + j];
+            }
         }
     }
     return rm;
 }
 ```
 
-### 9.1 Arbitrary Point (rotasi terhadap titik P)
+---
 
-Langkah umum: 1. Translasi objek supaya pusat rotasi P berpindah ke
-origin: `T(-P)`. 2. Rotasi di origin. 3. Translasi balik `T(+P)`.
+## 9.2 Arbitrary Point (Rotasi Terhadap Titik P)
 
-Contoh implementasi (rotasi terhadap sumbu Y dengan pusat P(2,0,0)):
+Langkah umum:  
+1. Translasi objek supaya pusat rotasi P berpindah ke origin: `T(-P)`  
+2. Rotasi di origin  
+3. Translasi balik `T(+P)`  
 
-``` javascript
+Contoh (rotasi terhadap sumbu Y dengan pusat P(2,0,0)):
+
+```javascript
 LIBS.set_I4(MOVEMATRIX);
 var temp = LIBS.get_I4();
 
@@ -148,16 +147,20 @@ GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
 GL.drawElements(...);
 ```
 
-### 9.2 Arbitrary Axis (rotasi terhadap sumbu dari P1 ke P2)
+---
 
-Langkah umum: 1. Translasi sehingga P1 ke origin. 2. Rotasi untuk
-menyelaraskan sumbu (P1→P2) dengan sumbu Z: rotasi X kemudian Y. 3.
-Rotasi sesuai keinginan terhadap Z. 4. Balikkan rotasi Y, balikkan
-rotasi X. 5. Translasi balik.
+## 9.3 Arbitrary Axis (Rotasi Terhadap Sumbu P1 → P2)
+
+Langkah umum:  
+1. Translasi sehingga P1 ke origin  
+2. Rotasi untuk menyelaraskan sumbu (P1→P2) dengan sumbu Z  
+3. Rotasi sesuai keinginan terhadap Z  
+4. Balikkan rotasi sebelumnya  
+5. Translasi balik  
 
 Contoh (sumbu lewat P1(0,-3,0) dan P2(3,0,0)):
 
-``` javascript
+```javascript
 LIBS.set_I4(MOVEMATRIX);
 var temp = LIBS.get_I4();
 
@@ -175,7 +178,7 @@ temp = LIBS.get_I4();
 LIBS.rotateY(temp, -Math.PI/4);
 MOVEMATRIX = LIBS.multiply(MOVEMATRIX, temp);
 
-// Rotasi terhadap Z sesuai waktu
+// Rotasi Z sesuai waktu
 temp = LIBS.get_I4();
 LIBS.rotateZ(temp, time * 0.001);
 MOVEMATRIX = LIBS.multiply(MOVEMATRIX, temp);
@@ -199,25 +202,25 @@ GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
 GL.drawElements(...);
 ```
 
-------------------------------------------------------------------------
+---
 
-# 3. BAB 10 --- Hierarchical Object (OOP)
+# BAB 10 — Hierarchical Object (OOP)
 
-> Fokus utama: bagaimana membuat objek dengan OOP (ES6 class), menyusun
-> hubungan parent-child, dan menerapkan transformasi Mpos, Mmove, serta
-> menghitung Mworld.
+Fokus: membuat objek dengan OOP (ES6 class), hubungan parent-child, dan transformasi `Mpos`, `Mmove`, serta `Mworld`.
 
-### MyObject.js (class) --- contoh kode
+---
 
-``` javascript
+## MyObject.js (Class)
+
+```javascript
 // MyObject.js
 export class MyObject {
     GL = null;
     SHADER_PROGRAM = null;
 
-    _position = null;   // attrib location
-    _color = null;      // attrib location
-    _MMatrix = null;    // uniform location
+    _position = null;
+    _color = null;
+    _MMatrix = null;
 
     OBJECT_VERTEX = null;
     OBJECT_FACES = null;
@@ -226,20 +229,19 @@ export class MyObject {
     faces = [];
 
     POSITION_MATRIX = LIBS.get_I4(); // Mpos
-    MOVE_MATRIX = LIBS.get_I4();     // Mmove
+    MOVE_MATRIX     = LIBS.get_I4(); // Mmove
 
     childs = [];
 
     constructor(GL, SHADER_PROGRAM, _position, _color, _Mmatrix) {
         this.GL = GL;
         this.SHADER_PROGRAM = SHADER_PROGRAM;
-
         this._position = _position;
         this._color = _color;
         this._MMatrix = _Mmatrix;
 
         this.vertex = [/* default cube vertex */];
-        this.faces = [/* default cube faces */];
+        this.faces  = [/* default cube faces */];
     }
 
     setup() {
@@ -273,9 +275,11 @@ export class MyObject {
 }
 ```
 
-### main.js --- pembuatan object & hirarki
+---
 
-``` javascript
+## main.js (Pembuatan Hirarki)
+
+```javascript
 import { MyObject } from "./MyObject.js";
 
 var Object1 = new MyObject(GL, SHADER_PROGRAM, _position, _color, _Mmatrix);
@@ -313,12 +317,10 @@ function animate(t) {
 requestAnimationFrame(animate);
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Penutup
 
--   **Instanced Drawing** → reuse VBO/EBO + transformasi berbeda.\
--   **Arbitrary Rotation** → kombinasi translasi & rotasi untuk
-    arbitrary point/axis.\
--   **Hierarchical OOP** → class MyObject dengan POSITION_MATRIX,
-    MOVE_MATRIX, childs → memudahkan struktur objek kompleks.
+- **Instanced Drawing** → reuse VBO/EBO + transformasi berbeda  
+- **Arbitrary Rotation** → translasi + rotasi untuk arbitrary point/axis  
+- **Hierarchical OOP** → class `MyObject` dengan `POSITION_MATRIX`, `MOVE_MATRIX`, `childs`
