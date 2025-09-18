@@ -158,6 +158,9 @@ Langkah umum:
 4. Balikkan rotasi sebelumnya  
 5. Translasi balik  
 
+Visualisasi langkah:
+[3D rotation about an Arbitrary axis](https://www.youtube.com/watch?v=75o5pmeXUMo)
+
 Contoh (sumbu lewat P1(0,-3,0) dan P2(3,0,0)):
 
 ```javascript
