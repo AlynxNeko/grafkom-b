@@ -1,6 +1,5 @@
 // Import Three.js
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Setup canvas renderer
 const renderer = new THREE.WebGLRenderer();
