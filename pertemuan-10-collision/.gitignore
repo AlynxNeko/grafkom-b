@@ -1,0 +1,9 @@
+.vite
+node_modules
+dist
+.vscode
+.DS_Store
+.idea
+package-lock.json
+package.json
+.env
