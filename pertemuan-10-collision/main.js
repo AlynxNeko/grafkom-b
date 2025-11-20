@@ -12,13 +12,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111111);
 
 // --- Camera ---
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.set(5, 5, 8);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(5, 5, 25);
 camera.lookAt(0, 0, 0);
 
 // --- Controls ---
@@ -26,12 +21,25 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
 
-// --- Helpers ---
-const axes = new THREE.AxesHelper(3);
-scene.add(axes);
+// --- Light ---
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(5, 10, 7.5);
+dirLight.castShadow = true;
+scene.add(dirLight);
 
-const grid = new THREE.GridHelper(10, 10);
-scene.add(grid);
+// --- Objects ---
+// Ground
+let size = 40;
+let geometry = new THREE.PlaneGeometry(size, size);
+let material = new THREE.MeshPhongMaterial({ color: '#AEA' });
+let mesh = new THREE.Mesh(geometry, material);
+mesh.rotation.x = -Math.PI / 2;
+mesh.position.y = 0;
+mesh.receiveShadow = true;
+scene.add(mesh);
+
 
 // --- Animation Loop ---
 var time_prev = 0;
