@@ -48,53 +48,6 @@ mesh.position.y = 0;
 mesh.receiveShadow = true;
 scene.add(mesh);
 
-// Player Box
-size = 4;
-geometry = new THREE.BoxGeometry(size, size, size);
-material = new THREE.MeshPhongMaterial({ color: '#8AC', transparent: true, opacity: 1 });
-const player = new THREE.Mesh(geometry, material);
-player.position.set(0, size / 2, 0);
-player.castShadow = true;
-scene.add(player);
-
-
-// obstacle Cube
-let cubes = [];
-for (let i = 0; i < 5; i++) {
-    let cubeGeo = new THREE.BoxGeometry(3, 3, 3);
-    let cubeMat = new THREE.MeshPhongMaterial({ color: '#8AC' });
-    let cube = new THREE.Mesh(cubeGeo, cubeMat);
-    const min = -15, max = 15;
-    const safeRadius = 6;
-    let randomx, randomz;
-    do {
-      randomx = Math.random() * (max - min) + min;
-      randomz = Math.random() * (max - min) + min;
-    } while (Math.hypot(randomx, randomz) < safeRadius);
-    cube.position.set(randomx, 1.5, randomz);
-    cube.castShadow = true;
-    scene.add(cube);
-    cubes.push(cube);
-}
-
-// obstacle Sphere
-let spheres = [];
-for (let i = 0; i < 5; i++) {
-    let sphereGeo = new THREE.SphereGeometry(1.5, 12, 8);
-    let sphereMat = new THREE.MeshPhongMaterial({ color: 'rgba(247, 249, 144, 1)' });
-    let sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    const min = -15, max = 15;
-    const safeRadius = 6;
-    let randomx, randomz;
-    do {
-      randomx = Math.random() * (max - min) + min;
-      randomz = Math.random() * (max - min) + min;
-    } while (Math.hypot(randomx, randomz) < safeRadius);
-    sphere.position.set(randomx, 1.5, randomz);
-    sphere.castShadow = true;
-    scene.add(sphere);
-    spheres.push(sphere);
-}
 // --- Animation Loop ---
 var time_prev = 0;
 function animate(time) {
